@@ -14,6 +14,8 @@ import { isBlock } from '../blocks'
 
 import { Context, getContext, isAllWhitespace, processTextValue } from './whitespace'
 
+type ElementWithTextContent = Element & { textContent: string }
+
 interface Ideserialize {
   el: ChildNode
   config?: Config
@@ -33,7 +35,7 @@ const deserialize = ({
     return null
   }
 
-  const currentEl = el as Element
+  const currentEl = el as ElementWithTextContent
   const nodeName = getName(currentEl)
   const childrenContext = getContext(nodeName) || context
 
@@ -84,7 +86,7 @@ const deserialize = ({
   if (config.textTags[nodeName] || el.type === ElementType.Text) {
     const attrs = gatherTextMarkAttributes({ el: currentEl })
     const text = processTextValue({
-      text: textContent(el as Element),
+      text: textContent(el as ElementWithTextContent),
       context: childrenContext as Context,
       isInlineStart: index === 0,
       isInlineEnd: Number.isInteger(childrenLength) && isLastChild,
@@ -98,10 +100,10 @@ const deserialize = ({
         return null
       }
       if (config.convertBrToLineBreak) {
-        if (currentEl.prev && getName(currentEl.prev as Element) === 'br') {
+        if (currentEl.prev && getName(currentEl.prev as ElementWithTextContent) === 'br') {
           return null
         }
-        if (currentEl.next && getName(currentEl.next as Element) === 'br') {
+        if (currentEl.next && getName(currentEl.next as ElementWithTextContent) === 'br') {
           return null
         }
       }
@@ -113,7 +115,7 @@ const deserialize = ({
 }
 
 interface IgatherTextMarkAttributes {
-  el: Element | ChildNode
+  el: ElementWithTextContent | ChildNode
   config?: Config
 }
 
@@ -122,8 +124,8 @@ const gatherTextMarkAttributes = ({ el, config = defaultConfig }: IgatherTextMar
   const children = getChildren(el)
   if (children.length) {
     ;[el, ...children.flat()].forEach((child) => {
-      const name = getName(child as Element)
-      const attrs = config.textTags[name] ? config.textTags[name](child as Element) : {}
+      const name = getName(child as ElementWithTextContent)
+      const attrs = config.textTags[name] ? config.textTags[name](child as ElementWithTextContent) : {}
       allAttrs = {
         ...allAttrs,
         ...attrs,
@@ -136,8 +138,8 @@ const gatherTextMarkAttributes = ({ el, config = defaultConfig }: IgatherTextMar
       }
     }
   } else {
-    const name = getName(el as Element)
-    const attrs = config.textTags[name] ? config.textTags[name](el as Element) : {}
+    const name = getName(el as ElementWithTextContent)
+    const attrs = config.textTags[name] ? config.textTags[name](el as ElementWithTextContent) : {}
     allAttrs = {
       ...attrs,
     }

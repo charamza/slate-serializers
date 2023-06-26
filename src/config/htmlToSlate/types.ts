@@ -1,7 +1,9 @@
 import { Element } from 'domhandler'
 
+type ElementWithTextContent = Element & { textContent: string }
+
 interface ItagMap {
-  [key: string]: (a?: Element) => object
+  [key: string]: (a: ElementWithTextContent) => object
 }
 
 /**
